@@ -1,0 +1,311 @@
+--------------
+July 10
+--------------
+Making Unit Test:
+
+- Put together 8 lines with a header in the format of the contigs.fa file
+- Example: >NODE_1_length_153_cov_510.0
+
+Running it in PS6.py:
+input_filename = args.i = Unit_test.fa
+output_file = args.o = expected_results.png
+kmer_len = args.k = 49
+cov_cutoff = args.cc 
+output_txt = args.of = expected_results.txt
+
+Output:
+mean_cov_depth: 597.8149298482354
+num_contigs: 8
+max_contig_length: 13057
+mean_contig_length: 3224.125
+len_genome_assembly: 25793
+13057
+
+Calculated:
+# max-contig-length = 13057
+# mean-contig-length = 3224.13
+# total-genome-assembly = 25793
+# mean-depth-of-coverage = 
+# N50 = 13057
+
+--------------
+July 10
+--------------
+Contig Length Distributions: PS6.py
+
+****Contigs.fa (test)*****
+
+*Print the output and Plot the distribution of the contigs.fa test file
+Assume a k-mer length of 49
+
+input_filename = args.i = contigs.fa = /projects/bgmp/shared/Bi621/contigs.fa
+output_file = args.o = contigs_part1_test.png
+kmer_len = args.k = 49
+
+Command: ./PS6.py -i /projects/bgmp/shared/Bi621/contigs.fa -o contigs_part1_test.png -k 49 -of contigs_part1_test.txt
+
+mean_cov_depth: 443.98995030805094
+num_contigs: 366
+max_contig_length: 46012
+mean_contig_length: 2362.155737704918
+len_genome_assembly: 864549
+N50: 6818
+
+--------------
+July 12
+--------------
+Run velveth: 
+
+velvet: 1.2.10
+
+velveth.srun: slurm-15469776.out
+* Ran successfully 
+SRUN script:
+
+/usr/bin/time -v velveth \
+output_file41 41 \
+-short -fastq /projects/bgmp/shared/Bi621/800_3_PE5_interleaved.fq.unmatched \
+-shortPaired -fastq /projects/bgmp/shared/Bi621/800_3_PE5_interleaved.fq_1 /projects/bgmp/shared/Bi621/800_3_PE5_interleaved.fq_2 
+
+# Percent of CPU this job got: 99%
+# Elapsed (wall clock) time (h:mm:ss or m:ss): 34:57.15
+# Exit status: 0
+# [2097.063293]  === Sequences loaded in 2088.127671 s
+# [2097.063438] Done inputting sequences
+# [2097.063441] Destroying splay table
+# [2097.071042] Splay table destroyed
+
+/usr/bin/time -v velveth \
+output_file31 31 \
+-short -fastq /projects/bgmp/shared/Bi621/800_3_PE5_interleaved.fq.unmatched \
+-shortPaired -fastq /projects/bgmp/shared/Bi621/800_3_PE5_interleaved.fq_1 /projects/bgmp/shared/Bi621/800_3_PE5_interleaved.fq_2
+
+#  Percent of CPU this job got: 99%
+#  Elapsed (wall clock) time (h:mm:ss or m:ss): 34:55.49
+#  Exit status: 0
+#  [2095.450226]  === Sequences loaded in 2086.809459 s
+#  [2095.450486] Done inputting sequences
+#  [2095.450489] Destroying splay table
+#  [2095.486648] Splay table destroyed
+
+
+/usr/bin/time -v velveth \
+output_file49 49 \
+-short -fastq /projects/bgmp/shared/Bi621/800_3_PE5_interleaved.fq.unmatched \
+-shortPaired -fastq /projects/bgmp/shared/Bi621/800_3_PE5_interleaved.fq_1 /projects/bgmp/shared/Bi621/800_3_PE5_interleaved.fq_2
+
+# Percent of CPU this job got: 99%
+# Elapsed (wall clock) time (h:mm:ss or m:ss): 34:57.06
+# Exit status: 0
+# [2097.026196]  === Sequences loaded in 2088.396846 s
+# [2097.026404] Done inputting sequences
+# [2097.026406] Destroying splay table
+# [2097.059362] Splay table destroyed
+
+--------------
+July 12
+--------------
+
+Run Velvetg:
+
+job output: velvetg-slurm.out
+
+User time (seconds): 53.13
+        System time (seconds): 0.81
+        Percent of CPU this job got: 99%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 0:54.21
+
+/usr/bin/time -v velvetg output_file31 -cov_cutoff -exp_cov auto -ins_length auto
+
+*Final graph has 3286 nodes and n50 of 5156, max 143767, total 1313434, using 2288311/2567781 reads
+
+/usr/bin/time -v velvetg output_file41 -cov_cutoff auto -exp_cov auto -ins_length auto
+
+*Final graph has 1964 nodes and n50 of 7074, max 365112, total 1369808, using 2120655/2567781 reads
+
+/usr/bin/time -v velvetg output_file49 -cov_cutoff auto -exp_cov auto -ins_length auto
+
+*Final graph has 1691 nodes and n50 of 4397, max 168313, total 1245658, using 1903414/2567781 reads
+
+Adjust contgs31 coverage cutoff to 20: velvetg_cov_cutoff_20 (job name)
+- output file name = velvetg_cov_cutoff_20.out
+
+Adjust contgs31 coverage cutoff to 60: velvetg_cov_cutoff_60 (job name)
+- output file name = velvetg_cov_cutoff_60.out 
+
+Adjust contigs31 minimum contig length to 500: velvetg_min500.srun (job name)
+- output file name = slurm-15446058.out
+
+--------------
+July 12
+--------------
+***Contig31_auto***
+exp_cov = auto
+cov_cutoff = auto
+ins_length = auto
+kmer_len = 31
+
+input_filename = args.i = output_file31/contigs31_auto.fa
+output_file = args.o = contigs31_auto.png
+kmer_len = args.k = 31
+#cov_cutoff = args.cc = auto (commented this out because cov is auto, string)
+output_txt = contigs31_auto.txt
+
+Command: ./PS6.py -i output_file31/contigs31_auto.fa -o contigs31_auto.png -k 31 -of contigs31_auto.txt
+
+num_contigs: 1530
+max_contig_length: 143797
+mean_cov_depth: 154.89706034889522
+mean_contig_length: 878.9202614379085
+len_genome_assembly: 1344748
+N50: 4932
+
+___________________________________________________________________________________________
+***Contig41_auto***
+exp_cov = auto
+cov_cutoff = auto
+ins_length = auto
+kmer_len = 41
+
+input_filename = args.i = output_file41/contigs41_auto.fa
+output_file = args.o = contigs41_auto.png
+kmer_len = args.k = 31
+#cov_cutoff = args.cc = auto (commented this out because cov is auto, string)
+
+Command: ./PS6.py -i output_file41/contigs41_auto.fa -o contigs41_auto.png -k 41 -of contigs41_auto.txt
+
+mean_cov_depth: 128.93891674698403
+num_contigs: 902
+max_contig_length: 365152
+mean_contig_length: 1544.980044345898
+len_genome_assembly: 1393572
+N50: 7056
+
+___________________________________________________________________________________________
+***Contig49_auto***
+exp_cov = auto
+cov_cutoff = auto
+ins_length = auto
+kmer_len = 49
+
+input_filename = args.i = output_file49/contigs49_auto.fa
+output_file = args.o = contigs49_auto.png
+kmer_len = args.k = 49
+#cov_cutoff = args.cc = auto (commented this out because cov is auto, string)
+
+Command: ./PS6.py -i output_file49/contigs49_auto.fa -o contigs49_auto.png -k 49 -of contigs49_auto.txt
+
+mean_cov_depth: 91.5168621241258
+num_contigs: 937
+max_contig_length: 168361
+mean_contig_length: 1366.0480256136607
+len_genome_assembly: 1279987
+N50: 4339
+___________________________________________________________________________________________
+***Contigs_cov20***
+exp_cov = auto
+cov_cutoff = 20
+ins_length = auto
+kmer_len = 31
+
+input_filename = args.i = output_file31/contigs_cov20.fa
+output_file = args.o = contigs_cov20.png
+kmer_len = args.k = 31
+cov_cutoff = args.cc = 20
+output_txt = args.of = contigs_cov20.txt
+
+Command: ./PS6.py -i output_file31/contigs_cov20.fa -o contigs_cov20.png -k 31 -cc 20 -of contigs_cov20.txt
+
+mean_cov_depth: 158.50109115987595
+num_contigs: 1477
+max_contig_length: 144780
+mean_contig_length: 894.5572105619499
+len_genome_assembly: 1321261
+N50: 4734
+___________________________________________________________________________________________
+***Contigs_cov60***
+exp_cov = auto
+cov_cutoff = 60
+ins_length = auto
+kmer_len = 31
+
+input_filename = args.i = output_file31/contigscov60.fa
+output_file = args.o = contigs_cov60.png
+kmer_len = args.k = 31
+cov_cutoff = args.cc = 60
+output_txt = args.of = contigs_cov60.txt
+
+Command: ./PS6.py -i output_file31/contigs_cov60.fa -o contigs_cov60.png -k 31 -cc 60 -of contigs_cov60.txt
+
+mean_cov_depth: 210.83655817950657
+num_contigs: 973
+max_contig_length: 15272
+mean_contig_length: 666.601233299075
+len_genome_assembly: 648603
+N50: 2316
+
+___________________________________________________________________________________________
+***Contigs_min500***
+exp_cov = auto
+cov_cutoff = 60
+ins_length = auto
+kmer_len = 31
+
+input_filename = args.i = output_file31/contigs_min500.fa
+output_file = args.o = contigs_min500.png
+kmer_len = args.k = 31
+cov_cutoff = args.cc = 60
+output_txt = args.of = contigs_min500.txt
+
+Command: ./PS6.py -i output_file31/contigs_min500.fa -o contigs_min500.png -k 31 -of contigs_min500.txt
+
+mean_cov_depth: 83.97574423290335
+num_contigs: 351
+max_contig_length: 143797
+mean_contig_length: 3355.2849002849002
+len_genome_assembly: 1177705
+N50: 6295
+
+*Compared results with Vandana and got the same numbers for each file.
+
+--------------
+July 13
+--------------
+
+Part 3 Questions:
+
+Calculate the expected coverage:
+
+*grab all the nucleotides in the forward, reverse, and unmatched fastq file
+
+sed -n "2~4p" /projects/bgmp/shared/Bi621/800_3_PE5_interleaved.fq_1 | tr -d "\n" | wc -m
+68009851
+
+sed -n "2~4p" /projects/bgmp/shared/Bi621/800_3_PE5_interleaved.fq_2 | tr -d "\n" | wc -m
+67083157
+
+sed -n "2~4p" /projects/bgmp/shared/Bi621/800_3_PE5_interleaved.fq.unmatched | tr -d "\n" | wc -m
+62089591
+
+Genome length = (50 fosmids) * 40 kb long = 2000000 nt
+
+Expected Coverage = (total number of nucleotides across all 3 files)/genome length
+                    = 197182599/2000000
+                    = 98.5912995
+
+3c. Given the calculuated coverage from 3.b and total fosmid library size, calculate the k-mer coverage
+
+Kmer coverage:
+Ck= C * (Lmean - K + 1) /Lmean
+Ck=98.5912*(76.8 - K + 1)/76.8
+
+for K = 31   Ck = 60.08
+for K = 41   Ck = 47.24
+for K = 49   Ck = 36.97
+
+Lmean = (68009851 + 67083157 + 62089591)/ (858989 + 858989 + 849803)
+76.8
+
+files:/projects/bgmp/shared/Bi621/800_3_PE5_interleaved.fq_1 
+/projects/bgmp/shared/Bi621/800_3_PE5_interleaved.fq_2 
+/projects/bgmp/shared/Bi621/800_3_PE5_interleaved.fq.unmatched
