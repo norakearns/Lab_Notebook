@@ -1,0 +1,260 @@
+
+-----------------
+July 12, 2021
+-----------------
+
+I wrote the code for PS7 part 1. I used the Danio_rario fasta file to generate a file with only the longest protein sequence from each gene.
+I created a list called "record_list." Each item in record_list is a record containing a GSID, PSID, and sequence. This first block of code
+checks to see if a record with the same GSID is already in record list. If there's a match, it checks to see if the sequence of the current protein is
+longer than the one in the record_list. If it is, it replaces the sequence, as well as the PSID, so that only the longest sequence is kept.
+
+file= open(filename, "r")					#open Danio_rario or Homo_sapiens
+all_lines = file.read()						#read the whole file into a single string
+record_array = all_lines.split('>')			#separate the string into blocks. Each record is a block
+record_list = []                            #GLOBAL: 
+
+#This section grabs the gene stable ID, protein stable ID, and longest protein for each gene
+for record in record_array[1:]:
+	record_line_array = record.split('\n')                      # [[header, seqline1, seqline2, ...], [header, seqline1, seqline2]]
+	header = record_line_array[0]                               # grabs the header, the first item in each array
+	gene_find = re.findall('ENSDARG[0-9]*.[0-9]', header)       # searches for the GSID in the header - this produces an array like this [GSID, ' ']
+	gene_stable_ID = gene_find[0]                               # grabs just the header
+	protein_find = re.findall('ENSDARP[0-9]*.[0-9]', header)
+	protein_stable_ID = protein_find[0]
+	seq = record_line_array[1:]                                 # grabs all the sequence lines
+	seq_line = ('').join(seq)                                   # joins them into a single string
+	triplet = [gene_stable_ID, protein_stable_ID, seq_line]     # makes a triplet array with GSID, PSID, and sequence
+	existing_match_found = False                                # if the triplet already exists in record
+	for record in record_list:
+		if record[0] == gene_stable_ID:
+			existing_match_found == True
+			if len(seq_line) > len(record[2]):
+				record[2] = seq_line    #thing you are replacing goes first, and the thing you're replacing it with goes on the right
+				record[1] = protein_stable_ID
+				#print("just replaced seqline for" + str(gene_stable_ID))
+			break
+	if existing_match_found == False:
+		record_list.append(triplet)
+		#print("appending record to record_list")
+#print(record_list)
+
+-----------------
+July 14, 2021
+-----------------
+
+Tried to run PS7.py, but got an error message: list index out of range.
+
+Created a new file, Open_File.py, which just opened the ensembl_zebrafish.txt file and made the chart_record_array and chart_rec_line_array
+
+chart_record_array ['ENSDARG00000113690\tENSDARP00000151186\tsi:ch211-223g7.6', 'ENSDARG00000011449\tENSDARP00000147268\tfes',... ]
+- each item in the array is a line/record from the ensembl_zebrafish.txt file.
+
+Split each item in chart_record_array by using chart_rec_line_array = line.split('\t'):
+chart_rec_line_array [[ENSDARG00000011449, ENSDARP00000123707, fes],[ENSDARG00000011449, ENSDARP00000147268, fes]]
+- each item in the array is a array containing the PSID, GSID, and gene name.
+
+**IMPORTANT**
+Some of the lines do not have a protein stable ID.
+Used the debugeger in VS Code and found that there's an empty line at the end of "ensembl_zebrafish.txt", which creates an 
+empty array and gives the "list index out of range error when looping through this for loop:
+
+for line in chart_record_array:
+	chart_rec_line_array = line.split('\t')
+		for record in record_list:
+			if record[0].startswith(chart_rec_line_array[0]) and record[1].startswith(chart_rec_line_array[1]):
+				record.append(chart_rec_line_array[2])
+				
+so made a modification so make sure there are 3 items in each array:
+
+for line in chart_record_array:
+	ln_count += 1
+	print(ln_count)
+	chart_rec_line_array = line.split('\t')
+	if len(chart_rec_line_array) == 3:
+		for record in record_list:
+			if record[0].startswith(chart_rec_line_array[0]) and record[1].startswith(chart_rec_line_array[1]):
+				record.append(chart_rec_line_array[2])
+            else:
+		        print("Record is not complete: ignore")
+
+**This caused a record to be make with too few lines because not all entries have gene names!!!
+
+EDIT:
+
+for line in chart_record_array:
+	ln_count += 1
+	print(ln_count)
+	chart_rec_line_array = line.split('\t')
+	if len(chart_rec_line_array) == 3: ************EDITED LINE****************
+		for record in record_list:
+			if record[0].startswith(chart_rec_line_array[0]) and record[1].startswith(chart_rec_line_array[1]):
+				record.append(chart_rec_line_array[2])
+            else:
+		        print("Record is not complete: ignore")
+
+The next block of code appends the gene name to the record. The Danio_rario fasta file doesn't contain a gene name for every sequence(!!!!), so I had to grab the gene name
+from the chart file ensembl_zebrafish.
+
+#Add gene name to record		
+chart_file = open(filename2, "r")		# open the ensembl chart file
+chart_all_lines = chart_file.read()		# read it into a single line
+chart_record_array = chart_all_lines.split('\n')	# split that line on the \n characters to make a list, each record is an item in that array
+ln_count = 0							# set a counter to 0
+for line in chart_record_array:			# for each record
+	ln_count += 1						# increment the counter by 1
+	chart_rec_line_array = line.split('\t')	# split the record on tab so each record is now a list with GSID, PSID, gene name
+	if len(chart_rec_line_array) == 3:	# if there are three items in that list
+		for record in record_list:		# check through record_list
+			if record[0] == chart_rec_line_array[0] and record[1] == chart_rec_line_array[1]: # append the gene name to the lists made above in the previous loop
+				record.append(chart_rec_line_array[2])
+			#print(record)
+
+Then I wrote it out to a huge fasta file!
+
+#Write it out to a fasta
+output_fasta = open(output, "w")
+for record in record_list:
+	if len(record) == 4:
+		output_fasta.write(">" + record[1] + " " + record[0] + " " + record[3] + "\n" + record[2] + "\n")
+	else:
+		output_fasta.write(">" + record[1] + " " + record[0] + " " + "\n" + record[2] + "\n")
+
+#record[1] = PSID, record[0] = GSID, record[3] = gene name, record[2] = sequence
+
+-----------------
+July 14, 2021
+-----------------
+I used BBMAP stats.sh function to run statistics on the fasta files I generated with my python script.
+Input files: Zebrafish_longest_proteins.fa
+Human_longest_proteins.fa
+
+Output files: ZFish_LP_stats.txt
+Human_LP_stats.txt
+
+Install BBMap module: 
+conda install bbmap
+version: 38.90
+
+Run statistics using stats.sh:
+stats.sh in=Zebrafish_longest_proteins.fa > ZFish_LP_stats.txt
+
+______________________________________________________________
+BLAST OFF 1: general blast
+______________________________________________________________
+I used blast to create a database for human and one for zebrafish using the fasta files created in the 
+previous section.
+
+Input files: Zebrafish_longest_proteins.fa
+Human_longest_proteins.fa
+
+Output files: ZFish_blast.db
+Human_blast.db
+
+#!/bin/bash
+#SBATCH --account=bgmp 
+#SBATCH --partition=bgmp 
+#SBATCH --job-name=BLAST_human_and_Zfish
+#SBATCH --output=BLAST_human_and_Zfish_%j.out
+#SBATCH --nodes=1 
+#SBATCH --ntasks-per-node=8 
+#SBATCH --time=12:00:00 
+#SBATCH --cpus-per-task=1
+
+module purge
+module load easybuild
+module load BLAST+/2.2.31
+module list
+/usr/bin/time -v makeblastdb -in /projects/bgmp/nkearns/bioinformatics/Bi621/PS/ps7-norakearns/Zebrafish_longest_proteins.fa -dbtype prot -out /projects/bgmp/nkearns/bioinformatics/Bi621/PS/ps7-norakearns/ZFish_blast.db
+/usr/bin/time -v makeblastdb -in /projects/bgmp/nkearns/bioinformatics/Bi621/PS/ps7-norakearns/Human_longest_proteins.fa -dbtype prot -out /projects/bgmp/nkearns/bioinformatics/Bi621/PS/ps7-norakearns/Human_blast.db
+
+Blastn format 6:
+https://www.metagenomics.wiki/tools/blast/blastn-output-format-6
+
+Evalue and Bitscore:
+https://www.metagenomics.wiki/tools/blast/evalue
+
+job output: BLAST_human_and_Zfish_15454771.out
+Command being timed: "makeblastdb -in /projects/bgmp/nkearns/bioinformatics/Bi621/PS/ps7-norakearns/Zebrafish_longest_proteins.fa -dbtype prot -out /projects/bgmp/nkearns/bioinformatics/Bi621/PS/ps7-norakearns/ZFish_blast.db"
+	User time (seconds): 0.68
+	System time (seconds): 0.03
+	Percent of CPU this job got: 69%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:01.04
+	...
+	Exit status: 0
+
+Command being timed: "makeblastdb -in /projects/bgmp/nkearns/bioinformatics/Bi621/PS/ps7-norakearns/Human_longest_proteins.fa -dbtype prot -out /projects/bgmp/nkearns/bioinformatics/Bi621/PS/ps7-norakearns/Human_blast.db"
+	User time (seconds): 0.54
+	System time (seconds): 0.01
+	Percent of CPU this job got: 82%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.67
+	...
+	Exit status: 0
+
+So FAST!-a
+______________________________________________________________
+BLAST OFF 2: BLASTp (protein blast)
+______________________________________________________________
+* The BLASTp job did a blast of the ZFish longest protein fasta I made against the Human genome, and of the Human longest
+protein fasta I made against the ZFish genome.
+
+Input: Zebrafish_longest_proteins.fa, Human_longest_proteins.fa
+Output: Human_against_ZFish_BLAST, ZFish_against_Human_BLAST
+
+#!/bin/bash
+#SBATCH --account=bgmp 
+#SBATCH --partition=bgmp 
+#SBATCH --job-name=BLAST_P
+#SBATCH --output=BLAST_P_%j.out
+#SBATCH --nodes=1 
+#SBATCH --ntasks-per-node=8 
+#SBATCH --time=12:00:00 
+#SBATCH --cpus-per-task=1
+
+module purge
+module load easybuild
+module load BLAST+/2.2.31
+
+/usr/bin/time -v blastp -num_threads 8 -query Zebrafish_longest_proteins.fa -db Human_blast.db \
+-evalue 1e-6 -use_sw_tback -outfmt 6 -out ZFish_against_Human_BLAST 
+
+/usr/bin/time -v blastp -num_threads 8 -query Human_longest_proteins.fa -db ZFish_blast.db \
+-evalue 1e-6 -use_sw_tback -outfmt 6 -out Human_against_ZFish_BLAST
+
+job output: BLAST_P_15454890.out
+
+got some of these weird error messages:
+Warning: [blastp] lcl|Query_9804 ENSDARP00000079033 ENSDARG00000070097 selenos: Warning: One or more U or O characters replaced by X for alignment score calculations at positions 188 
+But everything seemed to work ok?
+
+Command being timed: "blastp -num_threads 8 -query Zebrafish_longest_proteins.fa -db Human_blast.db -evalue 1e-6 -use_sw_tback -outfmt 6 -out ZFish_against_Human_BLAST"
+        User time (seconds): 22785.21
+        System time (seconds): 14.70
+        Percent of CPU this job got: 149%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 4:13:42
+Command being timed: "blastp -num_threads 8 -query Human_longest_proteins.fa -db ZFish_blast.db -evalue 1e-6 -use_sw_tback -outfmt 6 -out Human_against_ZFish_BLAST"
+        User time (seconds): 21984.78
+        System time (seconds): 13.65
+        Percent of CPU this job got: 151%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 4:01:33
+
+-----------------
+July 16, 2021
+-----------------
+Create summary information of the  ZFish_against_Human_BLAST and Human_against_ZFish_BLAST using bash commands.
+
+a) the number of hits in the file:
+wc -l ZFish_against_Human_BLAST
+
+b ) 10 hits with the highest bit scores.
+cat ZFish_against_Human_BLAST | sort -rnk 12 | head
+
+c ) All hits with lowest e-value
+cat ZFish_against_Human_BLAST | awk '$11 == "0.0" { print $0 }' | sort -grk 12 > ZFish_lowest_eval_sorted_by_BS.txt
+cat Human_against_ZFish_BLAST | awk '$11 == "0.0" { print $0 }' | sort -grk 12 > Human_lowest_eval_sorted_by_BS.txt
+
+d ) Differences between best bitscores and best evalues
+A bitscore indicates the size of a database which would be required for a match to be found by chance. Bitscore is log scaled, so an increase by 1 represents a doubling of the database size.
+Higher bit scores are better - they indicate that you would need a very large random database to find a match.
+Citation: https://www.metagenomics.wiki/tools/blast/evalue
+An e-value indicates the number of hits which could be expected by chance in a random database of the same size. A high e-value is worse, it indicates
+a higher probability that you would find a match in a match by chance in a database of the same size.
