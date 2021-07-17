@@ -1,0 +1,195 @@
+----------------
+July 12
+----------------
+These are the files I need!
+Reference the data in your path. DON'T COPY IT! You'll kill Talapas and
+be banished to wet lab.
+
+path on Talapas:
+/projects/bgmp/shared/Bi621/dre_WT_ovar12_R1.qtrim.fq.gz 
+/projects/bgmp/shared/Bi621/dre_WT_ovar12_R2.qtrim.fq.gz
+
+paths to hold genome assembly files:
+mkdir -p /projects/bgmp/nkearns/bioinformatics/Bi621/PS/ps8-norakearns/dre
+
+I went out to the Ensembl website which is **CONFUSING** 
+and downloaded these files directly to my directory (dre) on Talapas
+by grabbing their url and using "wget _url_"
+Danio_rerio.GRCz11.dna.primary_assembly.fa.gz 
+Danio_rerio.GRCz11.104.gtf.gz
+
+Then I installed STAR and samtools:
+     % conda activate bgmp_py39
+     % conda install star -c bioconda
+     % STAR --version
+     % conda install samtools -c bioconda
+     % samtools --version
+
+samtools version: 1.13
+star version: 2.7.9a 
+
+Make a directory to contain your STAR database!
+Danio_rerio.GRCz11.dna.ens104.STAR_2.7.9a
+
+Build a STAR database out of the reference sequence using the STAR program.
+This will k-merize the current genome to build a STAR database. 
+
+SCRIPT:
+
+#!/bin/bash
+#SBATCH --account=bgmp 
+#SBATCH --partition=bgmp 
+#SBATCH --nodes=1 
+#SBATCH --ntasks-per-node=8 
+#SBATCH --time=2:00:00 
+#SBATCH --cpus-per-task=1
+
+conda activate bgmp_py39_fresh
+
+/usr/bin/time -v STAR --runThreadN 8 --runMode genomeGenerate --genomeDir /projects/bgmp/nkearns/bioinformatics/Bi621/PS/ps8-norakearns/Danio_rerio.GRCz11.dna.ens104.STAR_2.7.9a --genomeFastaFiles /projects/bgmp/nkearns/bioinformatics/Bi621/PS/ps8-norakearns/dre/Danio_rerio.GRCz11.dna.primary_assembly.fa --sjdbGTFfile /projects/bgmp/nkearns/bioinformatics/Bi621/PS/ps8-norakearns/Danio_rerio.GRCz11.104.gtf
+
+**ntasks-per-node is the number of cores, and needs to make "runThread"
+
+Output directory: Danio_rerio.GRCz11.dna.ens104.STAR_2.7.9a
+was filled with 10 files
+
+job output: 
+Command being timed: "STAR --runThreadN 8 --runMode genomeGenerate --genomeDir /projects/bgmp/nkearns/bioinformatics/Bi621/PS/ps8-norakearns/Danio_rerio.GRCz11.dna.ens104.STAR_2.7.9a --genomeFastaFiles /projects/bgmp/nkearns/bioinformatics/Bi621/PS/ps8-norakearns/dre/Danio_rerio.GRCz11.dna.primary_assembly.fa --sjdbGTFfile /projects/bgmp/nkearns/bioinformatics/Bi621/PS/ps8-norakearns/Danio_rerio.GRCz11.104.gtf"
+jobID: 15426987
+Jul 12 15:58:30 ..... finished successfully
+User time (seconds): 2785.07
+Elapsed (wall clock) time (h:mm:ss or m:ss): 12:22.33
+Percent of CPU this job got: 379%
+
+
+* Run STAR to to align the reads to the reference genome *
+
+input files: Reference the data in your scripts, DO NOT COPY IT!
+/projects/bgmp/shared/Bi621/dre_WT_ovar12_R1.qtrim.fq.gz 
+/projects/bgmp/shared/Bi621/dre_WT_ovar12_R2.qtrim.fq.gz
+
+#!/bin/bash
+#SBATCH --account=bgmp 
+#SBATCH --partition=bgmp 
+#SBATCH --nodes=1 
+#SBATCH --ntasks-per-node=1 
+#SBATCH --time=2:00:00 
+#SBATCH --cpus-per-task=8 
+
+/usr/bin/time -v STAR --runThreadN 8 \
+--runMode alignReads --outFilterMultimapNmax 3 \
+--outSAMunmapped Within KeepPairs --alignIntronMax 1000000 \
+--alignMatesGapMax 1000000 --readFilesCommand zcat \
+--readFilesIn /projects/bgmp/shared/Bi621/dre_WT_ovar12_R1.qtrim.fq.gz /projects/bgmp/shared/Bi621/dre_WT_ovar12_R2.qtrim.fq.gz \
+--genomeDir /projects/bgmp/nkearns/bioinformatics/Bi621/PS/ps8-norakearns/Danio_rerio.GRCz11.dna.ens104.STAR_2.7.9a \
+--genomeFastaFiles dre/Danio_rerio.GRCz11.dna.primary_assembly.fa \
+--outFileNamePrefix Align_OUTPUT
+
+*THIS DIDN'T WORK: the "genomeFastFiles" made it blow up - shouldn't have been in there*
+
+UPDATE:
+The right way to run it:
+
+#SBATCH --partition=bgmp
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=8
+#SBATCH --time=2:00:00
+
+/usr/bin/time -v STAR --runThreadN 8 \
+--runMode alignReads --outFilterMultimapNmax 3 \
+--outSAMunmapped Within KeepPairs --alignIntronMax 1000000 \
+--alignMatesGapMax 1000000 --readFilesCommand zcat \
+--readFilesIn /projects/bgmp/shared/Bi621/dre_WT_ovar12_R1.qtrim.fq.gz /projects/bgmp/shared/Bi621/dre_WT_ovar12_R2.qtrim.fq.gz \
+--genomeDir /projects/bgmp/nkearns/bioinformatics/Bi621/PS/ps8-norakearns/Danio_rerio.GRCz11.dna.ens104.STAR_2.7.9a \
+--outFileNamePrefix Align_OUTPUT
+
+job ID: 15428629 
+Jul 13 09:20:06 ..... finished successfully
+System time (seconds): 9.09
+Percent of CPU this job got: 739%
+Elapsed (wall clock) time (h:mm:ss or m:ss): 3:13.06
+
+_________________
+July 13 , 2021
+_________________
+
+I was having issues connecting to VS Code. I got this error message:
+
+[09:18:26.854] > Checking server status on port 43155 with wget
+[09:18:26.856] >
+> 88e7456554f5: start
+> exitCode==28==               
+> listeningOn==43155==
+> osReleaseId==rhel==
+> arch==x86_64==
+> tmpDir==/run/user/2194==
+> platform==linux==
+> unpackResult====
+> didLocalDownload==0==
+> downloadTime====
+> installTime====
+> extInstallTime====
+> serverStartTime====
+> 88e7456554f5: end
+[09:18:26.857] Received install output:
+exitCode==28==
+listeningOn==43155==
+osReleaseId==rhel==
+arch==x86_64==
+tmpDir==/run/user/2194==
+platform==linux==
+unpackResult====
+didLocalDownload==0==
+downloadTime====
+installTime====
+extInstallTime====
+serverStartTime====
+[09:18:26.858] Server status check failed - waiting and retrying
+[09:18:26.858] Terminating local server
+[09:18:26.867] Local server exit: 15
+
+
+I went to this website: https://code.visualstudio.com/docs/remote/troubleshooting
+
+I went into VS Code and typed fn+1 and got the > prompts. I typed in this command: Remote-SSH: Kill VS Code Server on Host
+and it worked!
+_________________________________________
+SAM! TO! BAM!
+_________________________________________
+* use samtools to convert the ALIGN_OUTPUT sam file to a bam format. Using samtools,
+sort it, extract all reads from chromosome 1 into a new sam file. Report how many alignments are
+on chromosome 1.
+
+#!/bin/bash
+#SBATCH --account=bgmp 
+#SBATCH --partition=bgmp 
+#SBATCH --nodes=1 
+#SBATCH --job-name=Samtobam
+#SBATCH --output=Samtobam
+#SBATCH --ntasks-per-node=1 
+#SBATCH --time=2:00:00 
+#SBATCH --cpus-per-task=8
+
+conda activate bgmp_py39_fresh
+
+/usr/bin/time -v samtools view -S -b ALIGN_OUTPUT.sam > ALIGN_OUTPUT.bam 
+samtools sort ALIGN_OUTPUT.bam -o ALIGN_OUTPUT_sorted.bam
+samtools index ALIGN_OUTPUT_sorted.bam
+samtools view -H ALIGN_OUTPUT_sorted.bam > Chr1.sam  #puts header in the chromosome file 
+samtools view ALIGN_OUTPUT_sorted.bam 1 >> Chr1.sam
+
+ 
+UNIX Command to find how many alignments are on Chromosome 1:
+samtools view Chr1.sam | wc -l
+921737
+
+_________________
+July 15 , 2021
+_________________
+Python script to parse contents of SAM file.
+
+*If bit 4 in the bitwise flag is set to 0, the read is mapped_read
+*If bit 256 in the bitwise flag is set to 0, the read is not a secondary alignment.
+
+mapped_read: 21851108
+unmapped_read: 3102094
