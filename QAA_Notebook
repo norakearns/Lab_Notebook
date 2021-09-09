@@ -104,6 +104,13 @@ RUN CUTADAPT:
 JOB OUTPUT FILE: cutadapt_16175059.out
 System time (seconds): 10.07
 
+6. Use Trimmomatic to quality trim your reads. Specify the following, in this order:
+
+LEADING: quality of 3
+TRAILING: quality of 3
+SLIDING WINDOW: window size of 5 and required quality of 15
+MINLENGTH: 35 bases
+
 RUN TRIMMOMATIC:
 
 #!/bin/bash
@@ -120,6 +127,9 @@ RUN TRIMMOMATIC:
 /usr/bin/time -v trimmomatic PE -threads 4 S13_R1.fastq S13_R2.fastq S13_R1.trimmed.fastq S13_R1un.trimmed.fastq S13_R2.trimmed.fastq S13_R2un.trimmed.fastq LEADING:3 TRAILING:3 SLIDINGWINDOW:5:15 MINLEN:35
 
 JOB OUTPUT FILE: trimmomatic_16181904.out
+
+Took trimmed files and turned them into TSVs. 
+cat S1_R1.trimmed.fastq | sed -n "2~4p" | awk '{print length($0)}' > S1_R1.trimmed.nsv
 
 PART 3: ALIGNMENT AND STRAND SPECIFICITY
 
@@ -183,12 +193,37 @@ ALIGN TO DATABASE: STAR_Align.srun
 
 JOB OUTPUT FILE: STAR_align_16206461.out
 
+10. USE SCRIPT FROM PS8 TO COUNT MAPPED AND UNMAPPED READS
 
+./ParseSam.py -f S1_Align_to_refAligned.out.sam
 
+1_2A_control_S1:
+Mapped: 15627450
+Unmapped: 305236
 
+./ParseSam.py -f S13_Align_to_refAligned.out.sam
 
-Using your script from PS8 in Bi621, report the number of mapped and unmapped reads from each of your 2 sam files. Make sure that your script is looking at the bitwise flag to determine if reads are primary or secondary mapping (update your script if necessary).
+17_3E_fox_S13:
+Mapped: 21532850
+Unmapped: 948692
 
+11. Count reads that map to features using htseq-count. You should run htseq-count twice: once with --stranded=yes and again with --stranded=no. Use default parameters otherwise.
 
+HTSEQ.srun
 
+#!/bin/bash
+#SBATCH --account=bgmp 
+#SBATCH --partition=bgmp
+#SBATCH --job-name=htseq
+#SBATCH --output=HTSEQ_%j.out
+#SBATCH --nodes=1 
+#SBATCH --ntasks-per-node=1 
+#SBATCH --time=8:00:00 
+#SBATCH --cpus-per-task=8 
 
+/usr/bin/time -v htseq-count -f sam --stranded=yes --samout=S1_htseq_stranded_out  /projects/bgmp/nkearns/bioinformatics/Bi623/QAA/S1_Alignment/S1_Align_sorted /projects/bgmp/nkearns/bioinformatics/Bi623/QAA/Mus_musculus.GRCm39.104.gtf > S1.Stranded_htseq.out
+/usr/bin/time -v htseq-count -f sam --stranded=no --samout=S1_htseq_out  /projects/bgmp/nkearns/bioinformatics/Bi623/QAA/S1_Alignment/S1_Align_sorted /projects/bgmp/nkearns/bioinformatics/Bi623/QAA/Mus_musculus.GRCm39.104.gtf > S1.NotSranded_htseq.out
+/usr/bin/time -v htseq-count -f sam --stranded=yes --samout=S13_htseq_stranded_out  /projects/bgmp/nkearns/bioinformatics/Bi623/QAA/S13_Alignment/S13_Align_sorted /projects/bgmp/nkearns/bioinformatics/Bi623/QAA/Mus_musculus.GRCm39.104.gtf > S13.Stranded_htseq.out
+/usr/bin/time -v htseq-count -f sam --stranded=no --samout=S13_htseq_out  /projects/bgmp/nkearns/bioinformatics/Bi623/QAA/S13_Alignment/S13_Align_sorted /projects/bgmp/nkearns/bioinformatics/Bi623/QAA/Mus_musculus.GRCm39.104.gtf > S13.NotStranded_htseq.out
+
+JOB OUTPUT FILE: 
