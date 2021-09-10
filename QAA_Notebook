@@ -226,4 +226,24 @@ HTSEQ.srun
 /usr/bin/time -v htseq-count -f sam --stranded=yes --samout=S13_htseq_stranded_out  /projects/bgmp/nkearns/bioinformatics/Bi623/QAA/S13_Alignment/S13_Align_sorted /projects/bgmp/nkearns/bioinformatics/Bi623/QAA/Mus_musculus.GRCm39.104.gtf > S13.Stranded_htseq.out
 /usr/bin/time -v htseq-count -f sam --stranded=no --samout=S13_htseq_out  /projects/bgmp/nkearns/bioinformatics/Bi623/QAA/S13_Alignment/S13_Align_sorted /projects/bgmp/nkearns/bioinformatics/Bi623/QAA/Mus_musculus.GRCm39.104.gtf > S13.NotStranded_htseq.out
 
-JOB OUTPUT FILE: 
+JOB OUTPUT FILE: HTSEQ_16215111.out
+
+S1_stranded
+no_feature    7163565 = 94.5 %
+
+S1_NOT_stranded
+no_feature    408922 = 5.5% %
+
+S13_stranded
+no_feature    9781740 = 90.8 %
+
+S13_NOT_stranded
+no_feature    994711 = 1.8 %
+
+
+
+
+
+
+
+
